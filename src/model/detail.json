@@ -1,0 +1,4 @@
+{
+  "apiGetDetail":  "获取列表详情接口",
+  "apiGetOther": ["获取该页面的其他接口"]
+}
