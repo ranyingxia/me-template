@@ -1,11 +1,30 @@
 import React, { Component } from 'react';
-import { Form } from 'antd';
+import { Form, Input } from 'antd';
+import { FORMITEMLAYOUT } from '../../util/common.js';
 
+const FormItem = Form.Item;
 class DetialForm extends Component {
+  componentDidMount() {
+
+  }
   render() {
+    const { getFieldDecorator } = this.props.form;
     return (
       <div>
-      sadfsd
+        <Form onSubmit={this.handleSubmit}>
+          <FormItem
+            {...FORMITEMLAYOUT}
+            label="详情接口api"
+          >
+            {getFieldDecorator('apiGetDetail', {
+              rules: [
+                {required: true, message: 'Input something!'}
+              ],
+            })(
+              <Input placeholder="请填写获取列表详情接口" />
+            )}
+          </FormItem>
+        </Form>
       </div>
     );
   }
