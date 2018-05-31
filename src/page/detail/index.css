@@ -1,0 +1,15 @@
+.coupon-rule-item {
+  border: 1px solid #f0f0f0;
+  margin-bottom: 15px; }
+  .coupon-rule-item .rule-title {
+    padding-top: 12px;
+    background-color: #f7f7f7; }
+  .coupon-rule-item .rule-head {
+    text-align: center;
+    padding: 8px;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0; }
+  .coupon-rule-item .rule-content {
+    padding: 15px 8px 0px 8px; }
+  .coupon-rule-item .rule-coupon-item {
+    text-align: center; }

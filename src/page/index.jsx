@@ -5,9 +5,9 @@ import Detial from './detail';
 
 const TabPane = Tabs.TabPane;
 const TABS = [
-  { name: '列表', component: ''},
   { name: '详情', component: <Detial />},
-  { name: '创建', component: ''}
+  { name: '创建', component: ''},
+  { name: '列表', component: ''}
 ]
 
 class Home extends Component {
