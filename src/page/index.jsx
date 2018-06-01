@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Tabs } from 'antd';
 import Detial from './detail';
 
+import './index.css';
 
 const TabPane = Tabs.TabPane;
 const TABS = [

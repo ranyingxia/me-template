@@ -1,41 +1,58 @@
 import React, { Component } from 'react';
-import { FORMITEMLAYOUT, DEALRULES } from '../../util/common.js';
-import { Form, Input, Checkbox, Tooltip, Row, Col, Card, Select, Button } from 'antd';
+import { FORMITEMLAYOUT, FULLFORMITEMLAYOUT, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER } from '../../util/common.js';
+import { Form, Input, Checkbox, Row, Col, Card, Select, Button } from 'antd';
 import './index.css';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
+const DEFAULTSELECT = 'nothing';
 class DetialForm extends Component {
   constructor(props){
     super(props)
     this.state = {
-      campaignTO: {},
-      cardList: [{
-        ruleKey: 0,
-        couponKey: 1,
-        ruleGrantType: '',
-        couponRuleTOs: [{
+      itemList: [{
+        itemKey: 0,
+        childAddKey: 1,
+        cardName: '',
+        childList: [{
           key: 0,
-          dailyAmount: null,
-          soloAmount: null,
-          userType: '',
+          name: null,
+          param: null,
+          deal: DEFAULTSELECT,
         }],
       }],
     };
-    this.ruleRowKey = this.state.cardList.length;
+    this.itemAddKey = this.state.itemList.length;
   }
-  componentDidMount() {
-
+  /**
+   * 验证并提交表单
+   */
+  handleSubmit = (e) => {
+    e.preventDefault();
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        const { apiGetDetail, isCheckEdit, isCkeckRole } = values;
+        // 最终要提交的接口数据
+        const postData = {
+          apiGetDetail,
+          isCheckEdit,
+          isCkeckRole,
+          childList: this.bindDealData(),
+        }
+        console.log(postData);
+        return postData;
+      }
+    })
   }
-  handleSubmit = () => {
-
-  }
+  /**
+   * 处理接口返回数据
+   */
   bindDealData() {
-    return this.state.cardList.map((item) => {
-      const { ruleGrantType, couponRuleTOs } = item;
+    return this.state.itemList.map((item) => {
+      const { cardName, childList } = item;
       return {
-        ruleGrantType,
-        couponRuleTOs: couponRuleTOs.map((value) => {
+        cardName,
+        childList: childList.map((value) => {
           const { key, ...other } = value;
           return other
         }),
@@ -53,40 +70,40 @@ class DetialForm extends Component {
   //  增加一行规则
   bindAddRuleRow = () => {
     const row = {
-      ruleKey: this.ruleRowKey,
-      couponKey: 1,
-      ruleGrantType: '',
-      couponRuleTOs: [{
+      itemKey: this.itemAddKey,
+      childAddKey: 1,
+      cardName: '',
+      childList: [{
         key: 0,
-        dailyAmount: null,
-        soloAmount: null,
-        userType: '',
+        name: null,
+        param: null,
+        deal: DEFAULTSELECT,
       }],
     }
-    this.state.cardList.push(row);
-    this.bindSetTarget('cardList', this.state.cardList, () => { this.ruleRowKey += 1 });
+    this.state.itemList.push(row);
+    this.bindSetTarget('itemList', this.state.itemList, () => { this.itemAddKey += 1 });
   }
-  // 删除一行规则
+  // 删除一行card
   bindDelRuleRow(index) {
-    this.state.cardList.splice(index, 1);
-    this.bindSetTarget('cardList', this.state.cardList);
+    this.state.itemList.splice(index, 1);
+    this.bindSetTarget('itemList', this.state.itemList);
   }
   // 新增一行优惠券
   bindAddCouponRow(itemData, ruleIndex) {
     const row = {
-      key: itemData.couponKey,
-      dailyAmount: null,
-      soloAmount: null,
-      userType: '',
+      key: itemData.childAddKey,
+      name: null,
+      param: null,
+      deal: DEFAULTSELECT,
     }
-    const target = this.state.cardList[ruleIndex];
-    target.couponRuleTOs.push(row);
-    this.bindSetTarget('cardList', this.state.cardList, () => { target.couponKey += 1 });
+    const target = this.state.itemList[ruleIndex];
+    target.childList.push(row);
+    this.bindSetTarget('itemList', this.state.itemList, () => { target.childAddKey += 1 });
   }
   // 删除一行优惠券
   bindDelCouponRow(ruleIndex, couponIndex) {
-    this.state.cardList[ruleIndex].couponRuleTOs.splice(couponIndex, 1);
-    this.bindSetTarget('cardList', this.state.cardList);
+    this.state.itemList[ruleIndex].childList.splice(couponIndex, 1);
+    this.bindSetTarget('itemList', this.state.itemList);
   }
   /**
    * Input blur
@@ -96,25 +113,32 @@ class DetialForm extends Component {
    * @param {*} key 某行优惠券的某列的key值
    */
   bindSetCoupon(e, ruleIndex, couponIndex, key) {
-    const target = this.state.cardList[ruleIndex].couponRuleTOs[couponIndex];
-    const value = e.target.value;
-    target[key] = value === '' ? null : (+value);
+    const target = this.state.itemList[ruleIndex].childList[couponIndex];
+    const value = e.target.value.trim();
+    target[key] = value;
   }
-  bindSetUserType(e, ruleIndex, couponIndex, key) {
-    const target = this.state.cardList[ruleIndex].couponRuleTOs[couponIndex];
-    target[key] = +e;
+  bindSetDeal(e, ruleIndex, couponIndex, key) {
+    const target = this.state.itemList[ruleIndex].childList[couponIndex];
+    target[key] = e;
   }
   bindCardInputBlur(e, ruleIndex) {
-    const target = this.state.cardList[ruleIndex];
+    const target = this.state.itemList[ruleIndex];
     const value = e.target.value.trim();
-    target.ruleGrantType = value;
-    const key = `ruleGrantType-${target.ruleKey}`;
-    console.log(key)
+    target.cardName = value;
+    const key = `cardName-${target.itemKey}`;
     this.props.form.setFieldsValue({
       [key]: value
     });
     
   }
+  renderFormBtn() {
+    return (<FormItem {...FORMBTNLAYOUT}>
+      <Button type="primary" htmlType="submit">保存</Button>
+    </FormItem>)
+  }
+  /**
+   * render 基础信息
+   */
   renderForm() {
     const { getFieldDecorator } = this.props.form;
     return(
@@ -125,25 +149,21 @@ class DetialForm extends Component {
         >
           {getFieldDecorator('apiGetDetail', {
             rules: [
-              {required: true, message: 'Input something!'}
+              {required: true, message: ERROR_HOLDER }
             ],
           })(
-            <Input placeholder="请填写获取列表详情接口" />
+            <Input placeholder="获取详情的接口,例如：/api/sub1/sub2" />
           )}
         </FormItem>
         <FormItem
-          {...FORMITEMLAYOUT}
+          {...FULLFORMITEMLAYOUT}
           label="是否需要编辑权限"
         >
           {getFieldDecorator('isCheckEdit', {
           })(
-            <Tooltip
-              placement="right"
-              title="是否需要编辑权限逻辑：未开始时可修改，已生效只能结束，已结束只能查看"
-            >
-              <Checkbox />
-            </Tooltip>
+            <Checkbox />
           )}
+          <span className="greyTip">（是否需要编辑权限逻辑即：未开始时可修改，已生效只能结束，已结束只能查看）</span>
         </FormItem>
         <FormItem
           {...FORMITEMLAYOUT}
@@ -164,8 +184,8 @@ class DetialForm extends Component {
       <Row className="rule-title">
         <Col span={12}>
           <FormItem labelCol={{ sm: { span: 4 } }} wrapperCol={{ sm: { span: 10 } }} label="title">
-            {getFieldDecorator(`ruleGrantType-${items.ruleKey}`, {
-              rules: [{ required: true, message: '请填写' }],
+            {getFieldDecorator(`cardName-${items.itemKey}`, {
+              rules: [{ required: true, message: ERROR_HOLDER }],
             })(
               <Input onBlur={e => this.bindCardInputBlur(e, ruleIndex)} placeholder="请填写Card组件的title"/>
             )}
@@ -173,7 +193,7 @@ class DetialForm extends Component {
         </Col>
         <Col span={3} offset={9} style={{ paddingTop: 12 }}>
           {
-          this.state.cardList.length < 2 ? null
+          this.state.itemList.length < 2 ? null
             : <Button type="primary" size="small" icon="plus" onClick={() => this.bindDelRuleRow(ruleIndex)}>删除&nbsp;</Button>
           }
         </Col>
@@ -194,11 +214,11 @@ class DetialForm extends Component {
   }
   // render优惠券列表
   renderCoupon(itemData, ruleIndex) {
-    const { couponRuleTOs, ruleKey } = itemData
-    const isShowDelIcon = couponRuleTOs.length > 1;
+    const { childList, itemKey } = itemData
+    const isShowDelIcon = childList.length > 1;
     return (<div className="rule-content">
-      {couponRuleTOs.map((item, index) =>
-        this.renderCouponItem(item, index, ruleIndex, ruleKey, isShowDelIcon))
+      {childList.map((item, index) =>
+        this.renderCouponItem(item, index, ruleIndex, itemKey, isShowDelIcon))
       }
     </div>)
   }
@@ -207,52 +227,51 @@ class DetialForm extends Component {
    * @param {any} couponItem 每一行优惠数的数据
    * @param {any} couponIndex 优惠券的序列号
    * @param {any} ruleIndex   优惠券所属的“规则行”的序列号
-   * @param {any} ruleKey 优惠券所属的“规则行”的key值
+   * @param {any} itemKey 优惠券所属的“规则行”的key值
    * @param {any} isShowDelIcon 该行优惠券末尾是否允许删除
    */
-  renderCouponItem(couponItem, couponIndex, ruleIndex, ruleKey, isShowDelIcon) {
-    const { dailyAmount, soloAmount, userType, key} = couponItem;
+  renderCouponItem(couponItem, couponIndex, ruleIndex, itemKey, isShowDelIcon) {
+    const { key} = couponItem;
     const { getFieldDecorator } = this.props.form;
-    const ONLYKEY = `${ruleKey}-${key}`;
+    const ONLYKEY = `${itemKey}-${key}`;
     return (
       <Row key={ONLYKEY} className="rule-coupon-item">
         <Col span={3}>
           <FormItem>
-            {getFieldDecorator(`dailyAmount-${ONLYKEY}`, {
-              rules: [{ required: true, message: '请填写字段名' }],
-              initialValue: dailyAmount,
+            {getFieldDecorator(`name-${ONLYKEY}`, {
+              rules: [{ required: true, message: ERROR_HOLDER }],
+              initialValue: '',
             })(
               <Input
                 style={{ width: '90%' }}  placeholder="例：商品Id"
-                onBlur={val => this.bindSetCoupon(val, ruleIndex, couponIndex, 'dailyAmount')}
+                onBlur={val => this.bindSetCoupon(val, ruleIndex, couponIndex, 'name')}
               />
             )}
           </FormItem>
         </Col>
         <Col span={3}>
           <FormItem>
-            {getFieldDecorator(`soloAmount-${ONLYKEY}`, {
-              rules: [{ required: true, message: '请填写字段名' }],
-              initialValue: soloAmount,
+            {getFieldDecorator(`param-${ONLYKEY}`, {
+              rules: [{ required: true, message: ERROR_HOLDER }],
+              initialValue: '',
             })(
               <Input
                 style={{ width: '90%' }}  placeholder="例：id"
-                onBlur={val => this.bindSetCoupon(val, ruleIndex, couponIndex, 'soloAmount')}
+                onBlur={val => this.bindSetCoupon(val, ruleIndex, couponIndex, 'param')}
               />,
             )}
           </FormItem>
         </Col>
         <Col span={4}>
           <FormItem>
-            {getFieldDecorator(`userType-${ONLYKEY}`, {
-              initialValue: `nothing`,
-              rules: [{ required: true, message: '字段处理' }],
+            {getFieldDecorator(`deal-${ONLYKEY}`, {
+              initialValue: 'nothing',
             })(
               <Select
-                onChange={e => this.bindSetUserType(e, ruleIndex, couponIndex, 'userType')}
+                onChange={e => this.bindSetDeal(e, ruleIndex, couponIndex, 'deal')}
               >
-                { DEALRULES.map(item =>
-                  <Option key={item.id}>{item.name}</Option>)
+                {
+                  Object.keys(DEALRULES).map(((v) => <Option key={v}>{DEALRULES[v]}</Option>))
                 }
               </Select>,
             )}
@@ -270,31 +289,32 @@ class DetialForm extends Component {
     )
   }
   render() {
-    const { cardList } = this.state;
+    const { itemList } = this.state;
     return (
       <Card bordered={false}>
-        <Form>
+        <Form onSubmit={this.handleSubmit}>
           <Card title="基础配置" type="inner" >
             {this.renderForm()}
           </Card>
           <Card title="列表设置" type="inner" >
             {
-              cardList && cardList.map((item, index) => (
-                <div className="coupon-rule-item" key={item.ruleKey}>
+              itemList && itemList.map((item, index) => (
+                <div className="coupon-rule-item" key={item.itemKey}>
                   {this.renderHead(item, index)}
                   {this.renderCol(item, index)}
                   {this.renderCoupon(item, index)}
                 </div>
               ))
             }
-            <div>
-              <Row>
-                <Col span={3}>
-                  <Button type="primary" icon="plus" onClick={this.bindAddRuleRow}>添加规则</Button>
-                </Col>
-              </Row>
-            </div>
+            <Row>
+              <Col span={3}>
+                <Button type="primary" icon="plus" onClick={this.bindAddRuleRow}>添加规则</Button>
+              </Col>
+            </Row>
           </Card>
+          <div style={{ marginTop: 25 }}>
+            {this.renderFormBtn()}
+          </div>
         </Form>
       </Card>
     );

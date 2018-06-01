@@ -8,10 +8,10 @@
   "cardList": [
     {
       "cardName": "",
-      "list":[
+      "childList":[
         {
           "name": "列名",
-          "key": "字段名",
+          "param": "字段名",
           "deal": "字段处理, 'empty':可以为空, 'timeM':时间格式化保留到分, 'timeS':时间格式化保留到秒, 'money': 分转元 "
         }
       ]
