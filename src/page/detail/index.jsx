@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { FORMITEMLAYOUT, FULLFORMITEMLAYOUT, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER } from '../../util/common.js';
-import { Form, Input, Checkbox, Row, Col, Card, Select, Button } from 'antd';
+import { Form, Input, Checkbox, Row, Col, Card, Select, Button, Icon } from 'antd';
 import './index.css';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
 const DEFAULTSELECT = 'nothing';
+let uuid = 0;
 class DetialForm extends Component {
   constructor(props){
     super(props)
@@ -31,10 +32,11 @@ class DetialForm extends Component {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        const { apiGetDetail, isCheckEdit, isCkeckRole } = values;
+        const { apiGetDetail, apiGetOther, isCheckEdit, isCkeckRole } = values;
         // 最终要提交的接口数据
         const postData = {
           apiGetDetail,
+          apiGetOther,
           isCheckEdit,
           isCkeckRole,
           childList: this.bindDealData(),
@@ -131,6 +133,68 @@ class DetialForm extends Component {
     });
     
   }
+  add = () => {
+    const { form } = this.props;
+    // can use data-binding to get
+    const keys = form.getFieldValue('keys');
+    const nextKeys = keys.concat(uuid);
+    uuid++;
+    form.setFieldsValue({
+      keys: nextKeys,
+    });
+  }
+  remove = (k) => {
+    const { form } = this.props;
+    // can use data-binding to get
+    const keys = form.getFieldValue('keys');
+    // We need at least one passenger
+    if (keys.length === 1) {
+      return;
+    }
+
+    // can use data-binding to set
+    form.setFieldsValue({
+      keys: keys.filter(key => key !== k),
+    });
+  }
+  renderFormItems() {
+    const { getFieldDecorator, getFieldValue } = this.props.form;
+    const formItemLayoutWithOutLabel = {
+      wrapperCol: {
+        xs: { span: 24, offset: 0 },
+        sm: { span: 8, offset: 8 },
+      },
+    };
+    getFieldDecorator('keys', { initialValue: [] });
+    const keys = getFieldValue('keys');    
+    const formItems = keys.map((k, index) => {
+      return (
+        <FormItem
+          {...formItemLayoutWithOutLabel}
+          required={false}
+          key={k}
+        >
+          {getFieldDecorator(`apiGetOther[${k}]`, {
+            validateTrigger: ['onChange', 'onBlur'],
+            rules: [
+              {required: true, message: "Please input passenger's name or delete this field.",
+            }],
+          })(
+            <Input placeholder="页面上的其他接口，例如：/api/sub1/sub2" style={{ width: '80%', marginRight: 8 }} />
+          )}
+          {keys.length > 1 ? (
+            <Icon
+              className="dynamic-delete-button"
+              type="minus-circle-o"
+              disabled={keys.length === 1}
+              onClick={() => this.remove(k)}
+            />
+          ) : null}
+        </FormItem>
+      );
+    });
+    return formItems;    
+  }
   renderFormBtn() {
     return (<FormItem {...FORMBTNLAYOUT}>
       <Button type="primary" htmlType="submit">保存</Button>
@@ -155,6 +219,15 @@ class DetialForm extends Component {
             <Input placeholder="获取详情的接口,例如：/api/sub1/sub2" />
           )}
         </FormItem>
+        <FormItem
+          {...FORMITEMLAYOUT}
+          label="其他接口api"
+        >
+          <Button type="dashed" onClick={this.add} style={{ width: '80%'}}>
+            <Icon type="plus" /> Add
+          </Button>
+        </FormItem>
+        {this.renderFormItems()}
         <FormItem
           {...FULLFORMITEMLAYOUT}
           label="是否需要编辑权限"
