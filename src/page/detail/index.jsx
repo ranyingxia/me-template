@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FORMITEMLAYOUT, FULLFORMITEMLAYOUT, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER } from '../../util/common.js';
+import { FORMITEMLAYOUT, FORMITEMLAYOUTWITHTWOLABEL, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER } from '../../util/common.js';
 import { Form, Input, Checkbox, Row, Col, Card, Select, Button, Icon } from 'antd';
 import './index.css';
 
@@ -147,11 +147,6 @@ class DetialForm extends Component {
     const { form } = this.props;
     // can use data-binding to get
     const keys = form.getFieldValue('keys');
-    // We need at least one passenger
-    if (keys.length === 1) {
-      return;
-    }
-
     // can use data-binding to set
     form.setFieldsValue({
       keys: keys.filter(key => key !== k),
@@ -176,20 +171,16 @@ class DetialForm extends Component {
         >
           {getFieldDecorator(`apiGetOther[${k}]`, {
             validateTrigger: ['onChange', 'onBlur'],
-            rules: [
-              {required: true, message: "Please input passenger's name or delete this field.",
-            }],
+            rules: [{ required: true, message: ERROR_HOLDER }],
           })(
             <Input placeholder="页面上的其他接口，例如：/api/sub1/sub2" style={{ width: '80%', marginRight: 8 }} />
           )}
-          {keys.length > 1 ? (
-            <Icon
-              className="dynamic-delete-button"
-              type="minus-circle-o"
-              disabled={keys.length === 1}
-              onClick={() => this.remove(k)}
-            />
-          ) : null}
+          <Icon
+            className="dynamic-delete-button"
+            type="minus-circle-o"
+            style={{ cursor: 'pointer' }}
+            onClick={() => this.remove(k)}
+          />
         </FormItem>
       );
     });
@@ -229,7 +220,7 @@ class DetialForm extends Component {
         </FormItem>
         {this.renderFormItems()}
         <FormItem
-          {...FULLFORMITEMLAYOUT}
+          {...FORMITEMLAYOUTWITHTWOLABEL}
           label="是否需要编辑权限"
         >
           {getFieldDecorator('isCheckEdit', {
@@ -344,7 +335,7 @@ class DetialForm extends Component {
                 onChange={e => this.bindSetDeal(e, ruleIndex, couponIndex, 'deal')}
               >
                 {
-                  Object.keys(DEALRULES).map(((v) => <Option key={v}>{DEALRULES[v]}</Option>))
+                  Object.keys(DEALRULES).map(((v) => <Option key={v} disabled={v === 'phone' ? true : false}>{DEALRULES[v]}</Option>))
                 }
               </Select>,
             )}
