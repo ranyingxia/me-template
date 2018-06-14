@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import { FORMITEMLAYOUT, FORMITEMLAYOUTWITHTWOLABEL, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER } from '../../util/common.js';
 import { Form, Input, Checkbox, Row, Col, Card, Select, Button, Icon } from 'antd';
+import axiosFun from '../../util/axios';
+import { FORMITEMLAYOUT, FORMITEMLAYOUTWITHTWOLABEL, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER } from '../../util/common.js';
 import './index.css';
+
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -41,8 +43,7 @@ class DetialForm extends Component {
           isCkeckRole,
           childList: this.bindDealData(),
         }
-        console.log(postData);
-        return postData;
+        axiosFun.post('/api/me/detail/create', postData);
       }
     })
   }

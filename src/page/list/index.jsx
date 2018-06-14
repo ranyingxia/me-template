@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Form, Input, Checkbox, Row, Col, Card, Select, Button, Icon } from 'antd';
+import axiosFun from '../../util/axios';
 import { FORMITEMLAYOUT, FORMITEMLAYOUTWITHTWOLABEL, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER, FILTERSELECT } from '../../util/common.js';
 
 import '../detail/index.css';
-import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -87,8 +87,7 @@ class ListForm extends Component {
             value: filterList,
           }
         }
-        console.log(postData);
-        return postData;
+        axiosFun.post('/api/me/list/create', postData);
       }
     })
   }
