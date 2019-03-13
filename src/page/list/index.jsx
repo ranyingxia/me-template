@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Checkbox, Row, Col, Card, Select, Button, Icon } from 'antd';
+import { Form, Input, Checkbox, Row, Col, Card, Select, Button, Icon, Collapse } from 'antd';
 import axiosFun from '../../util/axios';
 import { FORMITEMLAYOUT, FORMITEMLAYOUTWITHTWOLABEL, FORMBTNLAYOUT, DEALRULES, ERROR_HOLDER, FILTERSELECT } from '../../util/common.js';
 
@@ -7,6 +7,7 @@ import '../detail/index.css';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
+const Panel = Collapse.Panel;
 let uuid = 0;
 const FILTERROW = {
   id: 0,
@@ -87,7 +88,7 @@ class ListForm extends Component {
             value: filterList,
           }
         }
-        axiosFun.post('/api/me/list/create', postData);
+        axiosFun.post('cps/api/list/create', postData);
       }
     })
   }
@@ -152,19 +153,13 @@ class ListForm extends Component {
               {required: true, message: ERROR_HOLDER }
             ],
           })(
-            <Input placeholder="例如：结算审核" style={{ width: '80%'}} />
+            <Input placeholder="例如：生产单" style={{ width: '80%'}} />
           )}
         </FormItem>
-        <FormItem {...FORMITEMLAYOUTWITHTWOLABEL} label="是否需要返回按钮">
+        <FormItem {...FORMITEMLAYOUTWITHTWOLABEL} label="标题提示">
           {getFieldDecorator('inputBack', {
           })(
-            <Checkbox />
-          )}
-        </FormItem>
-        <FormItem {...FORMITEMLAYOUT} label="是否在本页引入鉴权逻辑">
-          {getFieldDecorator('inputCheckrole', {
-          })(
-            <Checkbox />
+            <Input placeholder="页面标题的icon(问号)提示文案" style={{ width: '80%'}} />
           )}
         </FormItem>
         <FormItem {...FORMITEMLAYOUT} label="顶部tab栏">
@@ -452,36 +447,38 @@ class ListForm extends Component {
     return (
       <Card bordered={false}>
         <Form onSubmit={this.handleSubmit}>
-          <Card title="基础配置" type="inner" >
-            {this.renderForm()}
-          </Card>
-          <Card title="筛选栏配置" type="inner" >
-            {this.renderFilterForm()}
-            <div className="coupon-rule-item">
-              {this.renderFilterHead()}
-              <div className="rule-content">
-                { 
-                  filterList.map((item, index) => this.renderFilterItem(item, index))
-                }
-                <Button type="primary" icon="plus" onClick={() => this.bindAddRow(FILTER)} style={{ marginLeft: 8, marginBottom: 20 }}>添加</Button>
-              </div>
-            </div>
-          </Card>
-          <Card title="Table栏配置" type="inner" >
-            {this.renderTableForm()}
-            <div className="coupon-rule-item">
-              {this.renderTableHead()}
-              <div className="rule-content">
-                { 
-                  tableList.map((item, index) => this.renderTableItem(item, index))
-                }
-                <div style={{ marginLeft: 8, marginBottom: 20 }}>
-                  <Button type="primary" icon="plus" onClick={() => this.bindAddRow(TABLE)}>添加</Button>
-                  <span className="greyTip">（注意：所有列的宽度加起来要为100）</span>
+          <Collapse defaultActiveKey={['1', '2', '3']}>
+            <Panel header="基础信息" key="1">
+              {this.renderForm()}
+            </Panel>
+            <Panel header="筛选区" key="2">
+              {this.renderFilterForm()}
+              <div className="coupon-rule-item">
+                {this.renderFilterHead()}
+                <div className="rule-content">
+                  { 
+                    filterList.map((item, index) => this.renderFilterItem(item, index))
+                  }
+                  <Button type="primary" icon="plus" onClick={() => this.bindAddRow(FILTER)} style={{ marginLeft: 8, marginBottom: 20 }}>添加</Button>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Panel>
+            <Panel header="Table区" key="3">
+              {this.renderTableForm()}
+              <div className="coupon-rule-item">
+                {this.renderTableHead()}
+                <div className="rule-content">
+                  { 
+                    tableList.map((item, index) => this.renderTableItem(item, index))
+                  }
+                  <div style={{ marginLeft: 8, marginBottom: 20 }}>
+                    <Button type="primary" icon="plus" onClick={() => this.bindAddRow(TABLE)}>添加</Button>
+                    <span className="greyTip">（注意：所有列的宽度加起来要为100）</span>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+          </Collapse>
           <div style={{ marginTop: 25 }}>
             {this.renderFormBtn()}
           </div>
